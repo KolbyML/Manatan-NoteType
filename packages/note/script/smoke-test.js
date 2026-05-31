@@ -103,9 +103,17 @@ async function run() {
     templates.front.includes("mk-front-hero") &&
       templates.front.includes("mk-expression-panel") &&
       templates.front.includes("mk-front-header") &&
+      templates.front.includes("mk-front-field-group-nav") &&
+      templates.front.includes("function initFrontFieldGroups()") &&
       templates.back.includes("mk-header-layout") &&
       templates.style.includes(".mk-front-stack"),
     "Generated front template is missing the Kiku-style front layout.",
+  );
+
+  await assert(
+    !templates.front.includes("mk-front-picture") &&
+      !templates.front.includes("{{Picture}}"),
+    "Generated front template should not show the image by default.",
   );
 
   await assert(

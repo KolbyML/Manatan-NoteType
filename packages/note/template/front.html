@@ -37,14 +37,28 @@
             {{/IsSentenceCard}}
           </div>
         </div>
-
-        {{#Picture}}
-        <div class="mk-picture mk-front-picture" aria-hidden="true">
-          <div class="mk-picture-background">{{Picture}}</div>
-          <div class="mk-picture-field">{{Picture}}</div>
-        </div>
-        {{/Picture}}
       </section>
+
+      <div class="mk-field-group-nav mk-front-field-group-nav" hidden>
+        <button
+          type="button"
+          class="mk-field-group-prev"
+          aria-label="Previous context"
+        >
+          ‹
+        </button>
+        <div class="mk-field-group-status">
+          <span class="mk-field-group-date"></span>
+          <span class="mk-field-group-count"></span>
+        </div>
+        <button
+          type="button"
+          class="mk-field-group-next"
+          aria-label="Next context"
+        >
+          ›
+        </button>
+      </div>
       {{/IsClickCard}}
 
       {{#IsSentenceCard}}
@@ -75,3 +89,125 @@
     </div>
   </main>
 </div>
+
+<script>
+(() => {
+  const script = document.currentScript;
+  const siblingRoot = script?.previousElementSibling;
+  const nestedRoot = siblingRoot?.querySelector?.("#manatan-note-type");
+  const parentRoot =
+    script?.parentElement?.querySelector?.("#manatan-note-type");
+  const root = siblingRoot?.matches?.("#manatan-note-type")
+    ? siblingRoot
+    : (nestedRoot ??
+      parentRoot ??
+      document.querySelector("#manatan-note-type"));
+  if (!root || root.dataset.mkReady) return;
+  root.dataset.mkReady = "true";
+
+  const $ = (selector) => root.querySelector(selector);
+  const $$ = (selector) => Array.from(root.querySelectorAll(selector));
+
+  function wrapUngroupedSentenceNodes(sentence) {
+    if (!sentence || !sentence.querySelector("[data-group-id]")) return;
+
+    let wrapper = null;
+    function ensureWrapper(referenceNode) {
+      if (!wrapper) {
+        wrapper = document.createElement("span");
+        wrapper.dataset.groupId = "0";
+        wrapper.dataset.mkUngrouped = "true";
+        sentence.insertBefore(wrapper, referenceNode);
+      }
+      return wrapper;
+    }
+    function flushWrapper() {
+      wrapper = null;
+    }
+
+    Array.from(sentence.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (!node.textContent.replace(/\u00a0/g, "").trim()) return;
+        ensureWrapper(node).append(node);
+        return;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      const el = node;
+      if (
+        el.matches("[data-group-id]") ||
+        el.querySelector("[data-group-id]")
+      ) {
+        flushWrapper();
+        return;
+      }
+      if (!el.textContent.replace(/\u00a0/g, "").trim()) return;
+      ensureWrapper(node).append(node);
+    });
+  }
+
+  function initFrontAudioCard() {
+    $$(".mk-front-audio .mk-front-sentence b").forEach((target) => {
+      target.textContent = "[...]";
+    });
+  }
+
+  function initFrontFieldGroups() {
+    $$(".mk-front-sentence, .mk-click-sentence").forEach((sentence) => {
+      wrapUngroupedSentenceNodes(sentence);
+    });
+
+    const groupEls = $$(
+      ".mk-front-sentence [data-group-id], .mk-click-sentence [data-group-id], .mk-front-audio .mk-audio-row [data-group-id]",
+    );
+    const ids = Array.from(
+      new Set(groupEls.map((el) => el.dataset.groupId).filter(Boolean)),
+    ).sort((a, b) => Number(b) - Number(a));
+    if (ids.length <= 1) {
+      groupEls.forEach((el) => {
+        el.hidden = false;
+      });
+      return;
+    }
+
+    const nav = $(".mk-front-field-group-nav");
+    const prev = nav?.querySelector(".mk-field-group-prev");
+    const next = nav?.querySelector(".mk-field-group-next");
+    const count = nav?.querySelector(".mk-field-group-count");
+    const date = nav?.querySelector(".mk-field-group-date");
+
+    let index = 0;
+    function groupDate(id) {
+      const ms = Number(id);
+      const min = Date.UTC(2000, 0, 1);
+      const max = Date.UTC(2100, 0, 1);
+      if (ms < min || ms >= max) return "";
+      return new Date(ms).toLocaleDateString();
+    }
+
+    function show(nextIndex) {
+      index = (nextIndex + ids.length) % ids.length;
+      const id = ids[index];
+      groupEls.forEach((el) => {
+        el.hidden = el.dataset.groupId !== id;
+      });
+      if (count) count.textContent = `${index + 1} / ${ids.length}`;
+      if (date) date.textContent = groupDate(id);
+    }
+
+    if (nav && prev && next && count && date && !$(".mk-click-card")) {
+      prev.addEventListener("click", () => show(index - 1));
+      next.addEventListener("click", () => show(index + 1));
+      nav.hidden = false;
+    }
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "h") show(index - 1);
+      if (event.key === "l") show(index + 1);
+    });
+    show(0);
+  }
+
+  initFrontAudioCard();
+  initFrontFieldGroups();
+})();
+</script>

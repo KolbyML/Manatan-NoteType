@@ -124,10 +124,6 @@
   border-radius: var(--mk-radius);
 }
 
-.mk-front-picture {
-  display: none;
-}
-
 rt {
   color: var(--mk-muted);
 }
