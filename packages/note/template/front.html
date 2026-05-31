@@ -1,0 +1,77 @@
+<!-- Manatan-NoteType __VERSION__ -->
+<div id="manatan-note-type" class="mk-front" lang="ja">
+  <header class="mk-header mk-front-header" aria-label="Card status">
+    <div class="mk-header-left">
+      <span class="mk-header-time">8ms</span>
+    </div>
+  </header>
+
+  <main class="mk-front-main">
+    <div class="mk-front-stack">
+      {{#IsClickCard}}
+      <label class="mk-click-card mk-front-click-card">
+        <input type="checkbox">
+        <span class="mk-hero mk-front-hero">
+          <span class="mk-expression-panel">
+            <span class="mk-click-expression">{{Expression}}</span>
+          </span>
+        </span>
+        <span class="mk-click-sentence">{{kanji:Sentence}}</span>
+      </label>
+      {{/IsClickCard}}
+
+      {{^IsClickCard}}
+      <section class="mk-hero mk-front-hero">
+        <div class="mk-expression-panel">
+          <div class="mk-front-expression">
+            {{#IsSentenceCard}}
+            <span>?</span>
+            {{/IsSentenceCard}}
+            {{#IsAudioCard}}
+            <span>?</span>
+            {{/IsAudioCard}}
+            {{^IsSentenceCard}}
+            {{^IsAudioCard}}
+            {{Expression}}
+            {{/IsAudioCard}}
+            {{/IsSentenceCard}}
+          </div>
+        </div>
+
+        {{#Picture}}
+        <div class="mk-picture mk-front-picture" aria-hidden="true">
+          <div class="mk-picture-background">{{Picture}}</div>
+          <div class="mk-picture-field">{{Picture}}</div>
+        </div>
+        {{/Picture}}
+      </section>
+      {{/IsClickCard}}
+
+      {{#IsSentenceCard}}
+      <div class="mk-front-sentence">{{kanji:Sentence}}</div>
+      {{/IsSentenceCard}}
+
+      {{#IsWordAndSentenceCard}}
+      <div class="mk-front-sentence">{{kanji:Sentence}}</div>
+      {{/IsWordAndSentenceCard}}
+
+      {{#IsAudioCard}}
+      <div class="mk-front-audio">
+        <div class="mk-front-sentence">{{kanji:Sentence}}</div>
+        <div class="mk-audio-row">
+          {{#SentenceAudio}}
+          {{SentenceAudio}}
+          {{/SentenceAudio}}
+          {{^SentenceAudio}}
+          {{ExpressionAudio}}
+          {{/SentenceAudio}}
+        </div>
+      </div>
+      {{/IsAudioCard}}
+
+      {{#Hint}}
+      <div class="mk-hint mk-front-hint">{{Hint}}</div>
+      {{/Hint}}
+    </div>
+  </main>
+</div>

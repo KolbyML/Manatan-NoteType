@@ -1,0 +1,21 @@
+{
+  "name": "@repo/manatan-note-type",
+  "private": true,
+  "version": "1.10.2",
+  "type": "module",
+  "scripts": {
+    "build": "node ./script/generate-template.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "smoke": "node ./script/smoke-test.js",
+    "preview:apkg": "node ./script/generate-template.js && python3 ./script/generate-preview-apkg.py",
+    "copy-anki-build": "node ./script/copy-anki-build.js",
+    "generate-template": "node ./script/generate-template.js",
+    "apply": "node ./script/generate-template.js && node ./script/copy-anki-build.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "chalk": "^5.6.2",
+    "typescript": "~5.9.3"
+  }
+}

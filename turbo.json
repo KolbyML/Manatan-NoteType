@@ -1,0 +1,28 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".anki-build/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "smoke": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "preview:apkg": {
+      "dependsOn": ["build"],
+      "outputs": [".release/**"]
+    },
+    "generate-template": {
+      "dependsOn": ["^generate-template"]
+    },
+    "apply": {
+      "dependsOn": ["^apply"]
+    }
+  }
+}

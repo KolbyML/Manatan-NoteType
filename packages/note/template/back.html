@@ -1,0 +1,668 @@
+<!-- Manatan-NoteType __VERSION__ -->
+<div id="manatan-note-type" class="mk-back" lang="ja">
+  <header class="mk-header">
+    <div class="mk-header-layout">
+      <div class="mk-header-left">
+        <span class="mk-header-time">4ms</span>
+      </div>
+
+      <div class="mk-frequency">
+        {{#FreqSort}}
+        <span class="mk-freq-sort">{{FreqSort}}</span>
+        {{/FreqSort}}
+        {{#Frequency}}
+        <div class="mk-frequency-menu">
+          <button
+            type="button"
+            class="mk-frequency-toggle"
+            aria-label="Show frequency details"
+            aria-expanded="false"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m8 10 4 4 4-4"></path>
+            </svg>
+          </button>
+          <div class="mk-frequency-list">{{Frequency}}</div>
+        </div>
+        {{/Frequency}}
+      </div>
+    </div>
+  </header>
+
+  <main class="mk-back-main">
+    <section class="mk-hero">
+      <div class="mk-expression-panel">
+        <div class="mk-back-expression">
+          {{#ExpressionFurigana}}
+          {{furigana:ExpressionFurigana}}
+          {{/ExpressionFurigana}}
+          {{^ExpressionFurigana}}
+          {{Expression}}
+          {{/ExpressionFurigana}}
+        </div>
+
+        <div class="mk-reading">
+          {{#ExpressionFurigana}}
+          {{kana:ExpressionFurigana}}
+          {{/ExpressionFurigana}}
+          {{^ExpressionFurigana}}
+          {{ExpressionReading}}
+          {{/ExpressionFurigana}}
+        </div>
+
+        {{#PitchPosition}}
+        <div class="mk-pitch" data-pitch-categories="{{PitchCategories}}">
+          {{PitchPosition}}
+        </div>
+        {{/PitchPosition}}
+
+        <div class="mk-audio-row">
+          {{ExpressionAudio}}
+          {{SentenceAudio}}
+        </div>
+      </div>
+
+      {{#Picture}}
+      <div class="mk-picture">
+        <div class="mk-picture-background">{{Picture}}</div>
+        <div class="mk-picture-field">{{Picture}}</div>
+      </div>
+      {{/Picture}}
+    </section>
+
+    <div class="mk-field-group-nav" hidden>
+      <button
+        type="button"
+        class="mk-field-group-prev"
+        aria-label="Previous context"
+      >
+        ‹
+      </button>
+      <div class="mk-field-group-status">
+        <span class="mk-field-group-date"></span>
+        <span class="mk-field-group-count"></span>
+      </div>
+      <button
+        type="button"
+        class="mk-field-group-next"
+        aria-label="Next context"
+      >
+        ›
+      </button>
+    </div>
+
+    <section class="mk-sentence">
+      {{#SentenceFurigana}}
+      {{furigana:SentenceFurigana}}
+      {{/SentenceFurigana}}
+      {{^SentenceFurigana}}
+      {{furigana:Sentence}}
+      {{/SentenceFurigana}}
+    </section>
+
+    <section class="mk-definition">
+      {{#DefinitionPicture}}
+      <div class="mk-definition-picture mk-zoomable-images">
+        {{DefinitionPicture}}
+      </div>
+      {{/DefinitionPicture}}
+
+      {{#SelectionText}}
+      <section
+        class="mk-definition-section mk-definition-page"
+        data-title="Selection Text"
+      >
+        <h2>Selection</h2>
+        <div class="mk-zoomable-images">{{SelectionText}}</div>
+      </section>
+      {{/SelectionText}}
+
+      {{#MainDefinition}}
+      <section
+        class="mk-definition-section mk-definition-page"
+        data-title="Main Definition"
+      >
+        <h2>Definition</h2>
+        <div class="mk-zoomable-images">{{MainDefinition}}</div>
+      </section>
+      {{/MainDefinition}}
+
+      {{#Glossary}}
+      <section
+        class="mk-definition-section mk-definition-page"
+        data-title="Glossary"
+      >
+        <h2>Glossary</h2>
+        <div class="mk-glossary mk-zoomable-images">{{Glossary}}</div>
+      </section>
+      {{/Glossary}}
+    </section>
+
+    {{#MiscInfo}}
+    <details class="mk-misc">
+      <summary>Misc. info</summary>
+      <div>{{MiscInfo}}</div>
+    </details>
+    {{/MiscInfo}}
+  </main>
+
+  {{#Tags}}
+  <footer class="mk-footer">
+    <div class="mk-tags">{{Tags}}</div>
+  </footer>
+  {{/Tags}}
+
+  <dialog class="mk-image-modal" aria-label="Image preview">
+    <form method="dialog">
+      <button class="mk-image-modal-close" aria-label="Close image preview">
+        x
+      </button>
+    </form>
+    <img alt="">
+  </dialog>
+</div>
+
+<script>
+(() => {
+  const script = document.currentScript;
+  const siblingRoot = script?.previousElementSibling;
+  const nestedRoot = siblingRoot?.querySelector?.("#manatan-note-type");
+  const parentRoot =
+    script?.parentElement?.querySelector?.("#manatan-note-type");
+  const root = siblingRoot?.matches?.("#manatan-note-type")
+    ? siblingRoot
+    : (nestedRoot ??
+      parentRoot ??
+      document.querySelector("#manatan-note-type"));
+  if (!root || root.dataset.mkReady) return;
+  root.dataset.mkReady = "true";
+
+  const $ = (selector) => root.querySelector(selector);
+  const $$ = (selector) => Array.from(root.querySelectorAll(selector));
+
+  function initFrequencyDropdown() {
+    const menu = $(".mk-frequency-menu");
+    const toggle = $(".mk-frequency-toggle");
+    if (!menu || !toggle) return;
+
+    function setOpen(open) {
+      menu.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    toggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setOpen(!menu.classList.contains("is-open"));
+    });
+
+    root.addEventListener("click", (event) => {
+      if (!menu.contains(event.target)) setOpen(false);
+    });
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+  }
+
+  function initDefinitionPager() {
+    const box = $(".mk-definition");
+    if (!box) return;
+
+    const allPages = $$(".mk-definition-page");
+    const pages = allPages.filter((page) => {
+      const clone = page.cloneNode(true);
+      clone.querySelectorAll("h2").forEach((heading) => {
+        heading.remove();
+      });
+      return (
+        clone.textContent.replace(/\u00a0/g, "").trim() ||
+        clone.querySelector("img, svg")
+      );
+    });
+    const activePages = new Set(pages);
+    allPages.forEach((page) => {
+      page.hidden = !activePages.has(page);
+    });
+    if (pages.length === 0) {
+      box.hidden = true;
+      return;
+    }
+    if (pages.length <= 1) return;
+
+    const nav = document.createElement("div");
+    nav.className = "mk-definition-nav";
+    nav.innerHTML = `
+        <button type="button" class="mk-definition-title"></button>
+        <span class="mk-definition-count"></span>
+      `;
+    box.prepend(nav);
+
+    const sideControls = document.createElement("div");
+    sideControls.className = "mk-definition-side-controls";
+    sideControls.innerHTML = `
+        <button type="button" class="mk-definition-prev" aria-label="Previous definition"></button>
+        <button type="button" class="mk-definition-next" aria-label="Next definition"></button>
+      `;
+    box.append(sideControls);
+
+    let index = 0;
+    const title = nav.querySelector(".mk-definition-title");
+    const count = nav.querySelector(".mk-definition-count");
+
+    function show(nextIndex) {
+      index = (nextIndex + pages.length) % pages.length;
+      pages.forEach((page, i) => {
+        page.hidden = i !== index;
+      });
+      title.textContent = pages[index].dataset.title || "Definition";
+      count.textContent = `${index + 1}/${pages.length}`;
+    }
+
+    sideControls
+      .querySelector(".mk-definition-prev")
+      .addEventListener("click", () => {
+        show(index - 1);
+      });
+    sideControls
+      .querySelector(".mk-definition-next")
+      .addEventListener("click", () => {
+        show(index + 1);
+      });
+    title.addEventListener("click", () => show(index + 1));
+
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") show(index - 1);
+      if (event.key === "ArrowRight") show(index + 1);
+    });
+
+    show(0);
+  }
+
+  function initImageModal() {
+    const modal = $(".mk-image-modal");
+    const modalImg = modal?.querySelector("img");
+    if (!modal || !modalImg || typeof modal.showModal !== "function") return;
+
+    $$(".mk-zoomable-images img").forEach((img) => {
+      img.classList.add("mk-image-zoomable");
+    });
+
+    root.addEventListener("click", (event) => {
+      const img = event.target.closest?.(
+        ".mk-zoomable-images img, .mk-picture-field img",
+      );
+      if (!img || !root.contains(img)) return;
+
+      modalImg.src = img.currentSrc || img.src;
+      modalImg.alt = img.alt || "";
+      modal.showModal();
+    });
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) modal.close();
+    });
+  }
+
+  function morae(text) {
+    const small = new Set("ぁぃぅぇぉゃゅょゎァィゥェォャュョヮっッ");
+    return Array.from(text.trim()).reduce((list, char) => {
+      if (small.has(char) && list.length) {
+        list[list.length - 1] += char;
+      } else if (!/\s/.test(char)) {
+        list.push(char);
+      }
+      return list;
+    }, []);
+  }
+
+  function pitchType(moraCount, pitchNum, category) {
+    const normalized = category?.trim().toLowerCase();
+    const categoryMap = {
+      平板: "heiban",
+      頭高: "atamadaka",
+      中高: "nakadaka",
+      尾高: "odaka",
+      起伏: "kifuku",
+    };
+    const mapped = categoryMap[normalized] || normalized;
+    if (["heiban", "atamadaka", "nakadaka", "odaka", "kifuku"].includes(mapped))
+      return mapped;
+    if (pitchNum === 0) return "heiban";
+    if (pitchNum === 1) return "atamadaka";
+    if (pitchNum > 1 && pitchNum === moraCount) return "odaka";
+    if (pitchNum > 1 && pitchNum < moraCount) return "nakadaka";
+    return "";
+  }
+
+  function pitchPattern(moraCount, pitchNum, type) {
+    if (moraCount < 1) return [];
+    if (type === "heiban" || pitchNum === 0)
+      return [0, ...Array(moraCount - 1).fill(1), 1];
+    if (type === "atamadaka" || pitchNum === 1)
+      return [1, ...Array(moraCount - 1).fill(0), 0];
+    if (type === "odaka" || pitchNum === moraCount)
+      return [0, ...Array(moraCount - 1).fill(1), 0];
+    if (type === "nakadaka" || (pitchNum > 1 && pitchNum < moraCount))
+      return [
+        0,
+        ...Array(pitchNum - 1).fill(1),
+        ...Array(moraCount - pitchNum).fill(0),
+        0,
+      ];
+    return [];
+  }
+
+  function extractPitchNumbers(text) {
+    const normalized = text.replace(/[０-９]/g, (char) =>
+      String.fromCharCode(char.charCodeAt(0) - 0xfee0),
+    );
+    const matches = normalized.match(/\d+/g) || [];
+    return Array.from(
+      new Set(matches.map(Number).filter((num) => num >= 0 && num < 50)),
+    );
+  }
+
+  function initPitchDisplay() {
+    const pitch = $(".mk-pitch");
+    const reading = $(".mk-reading");
+    const readingText = reading?.textContent.trim();
+    if (!pitch || !reading || !readingText || pitch.dataset.mkPitchReady)
+      return;
+
+    const units = morae(readingText);
+    if (!units.length) return;
+
+    const pitchNumbers = extractPitchNumbers(pitch.textContent);
+    if (!pitchNumbers.length) return;
+
+    const categories = (pitch.dataset.pitchCategories || "")
+      .split(",")
+      .map((category) => category.trim())
+      .filter(Boolean);
+
+    pitch.textContent = "";
+    pitch.dataset.mkPitchReady = "true";
+    pitch.hidden = true;
+    reading.hidden = true;
+
+    pitchNumbers.forEach((downstep, pitchIndex) => {
+      const type = pitchType(units.length, downstep, categories[pitchIndex]);
+      const pattern = pitchPattern(units.length, downstep, type);
+      if (pitchIndex === 0 && type) root.dataset.pitchType = type;
+
+      const item = document.createElement("div");
+      item.className = "mk-pitch-item";
+      if (type) item.dataset.pitchType = type;
+
+      const graph = document.createElement("div");
+      graph.className = "mk-pitch-reading";
+      units.forEach((unit, index) => {
+        const mora = document.createElement("span");
+        const high = pattern[index] === 1;
+        const dropsAfter = high && pattern[index + 1] === 0;
+        mora.className = [
+          "mk-pitch-mora",
+          high ? "mk-pitch-high" : "",
+          dropsAfter ? "mk-pitch-segment" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        mora.textContent = unit;
+        graph.append(mora);
+      });
+
+      const badge = document.createElement("span");
+      badge.className = "mk-pitch-number";
+      badge.textContent = downstep;
+
+      item.append(graph, badge);
+      pitch.append(item);
+    });
+
+    pitch.hidden = false;
+  }
+
+  function initFieldGroups() {
+    function wrapUngroupedSentenceNodes() {
+      const sentence = $(".mk-sentence");
+      if (!sentence || !sentence.querySelector("[data-group-id]")) return;
+
+      let wrapper = null;
+      function ensureWrapper(referenceNode) {
+        if (!wrapper) {
+          wrapper = document.createElement("span");
+          wrapper.dataset.groupId = "0";
+          wrapper.dataset.mkUngrouped = "true";
+          sentence.insertBefore(wrapper, referenceNode);
+        }
+        return wrapper;
+      }
+      function flushWrapper() {
+        wrapper = null;
+      }
+
+      Array.from(sentence.childNodes).forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (!node.textContent.replace(/\u00a0/g, "").trim()) return;
+          ensureWrapper(node).append(node);
+          return;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const el = node;
+        if (
+          el.matches("[data-group-id]") ||
+          el.querySelector("[data-group-id]")
+        ) {
+          flushWrapper();
+          return;
+        }
+        if (!el.textContent.replace(/\u00a0/g, "").trim()) return;
+        ensureWrapper(node).append(node);
+      });
+    }
+
+    wrapUngroupedSentenceNodes();
+
+    $$(".mk-picture img").forEach((img) => {
+      if (!img.closest("[data-group-id]")) img.dataset.groupId = "0";
+    });
+
+    const groupEls = $$(
+      ".mk-sentence [data-group-id], .mk-picture [data-group-id], .mk-audio-row [data-group-id], .mk-misc [data-group-id]",
+    );
+    const ids = Array.from(
+      new Set(groupEls.map((el) => el.dataset.groupId).filter(Boolean)),
+    ).sort((a, b) => Number(b) - Number(a));
+    if (ids.length <= 1) return;
+
+    const nav = $(".mk-field-group-nav");
+    const prev = $(".mk-field-group-prev");
+    const next = $(".mk-field-group-next");
+    const count = $(".mk-field-group-count");
+    const date = $(".mk-field-group-date");
+    if (!nav || !prev || !next || !count || !date) return;
+
+    let index = 0;
+    function groupDate(id) {
+      const ms = Number(id);
+      const min = Date.UTC(2000, 0, 1);
+      const max = Date.UTC(2100, 0, 1);
+      if (ms < min || ms >= max) return "";
+      return new Date(ms).toLocaleDateString();
+    }
+
+    function show(nextIndex) {
+      index = (nextIndex + ids.length) % ids.length;
+      const id = ids[index];
+      groupEls.forEach((el) => {
+        el.hidden = el.dataset.groupId !== id;
+      });
+      const picture = $(".mk-picture");
+      if (picture) {
+        picture.dataset.activeGroupId = id;
+        picture.dispatchEvent(new CustomEvent("mk-group-change"));
+      }
+      date.textContent = groupDate(id);
+      count.textContent = `${index + 1} / ${ids.length}`;
+    }
+
+    prev.addEventListener("click", () => show(index - 1));
+    next.addEventListener("click", () => show(index + 1));
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "h") show(index - 1);
+      if (event.key === "l") show(index + 1);
+    });
+    nav.hidden = false;
+    show(0);
+  }
+
+  function initPictureCycler() {
+    const box = $(".mk-picture");
+    const background = $(".mk-picture-background");
+    const field = $(".mk-picture-field");
+    if (!box || !background || !field) return;
+
+    const pictures = Array.from(field.querySelectorAll("img"))
+      .map((img) => {
+        const group = img.closest("[data-group-id]");
+        const clone = img.cloneNode(true);
+        clone.removeAttribute("hidden");
+        return {
+          groupId: img.dataset.groupId || group?.dataset.groupId || "",
+          html: clone.outerHTML,
+        };
+      })
+      .filter((picture) => picture.html.includes("src="));
+    if (!pictures.length) return;
+
+    const controls = document.createElement("div");
+    controls.className = "mk-picture-controls";
+    controls.innerHTML = `
+        <button type="button" class="mk-picture-prev" aria-label="Previous picture"></button>
+        <button type="button" class="mk-picture-next" aria-label="Next picture"></button>
+      `;
+    const dots = document.createElement("div");
+    dots.className = "mk-picture-dots";
+    box.append(controls, dots);
+
+    let index = 0;
+    let activeGroupId = null;
+
+    function activePictures() {
+      const groupId = box.dataset.activeGroupId || "";
+      if (!groupId) return pictures;
+
+      return pictures.filter((picture) => (picture.groupId || "0") === groupId);
+    }
+
+    function show(nextIndex = index) {
+      const groupId = box.dataset.activeGroupId || "";
+      if (groupId !== activeGroupId) {
+        activeGroupId = groupId;
+        index = 0;
+      }
+
+      const active = activePictures();
+      if (!active.length) {
+        background.textContent = "";
+        field.textContent = "";
+        controls.hidden = true;
+        dots.hidden = true;
+        return;
+      }
+
+      index = (nextIndex + active.length) % active.length;
+      const html = active[index].html;
+      background.innerHTML = html;
+      field.innerHTML = html;
+
+      const hasMultiple = active.length > 1;
+      controls.hidden = !hasMultiple;
+      dots.hidden = !hasMultiple;
+      dots.innerHTML = active
+        .map(
+          (_, i) =>
+            `<span class="mk-picture-dot${i === index ? " is-active" : ""}"></span>`,
+        )
+        .join("");
+    }
+
+    controls
+      .querySelector(".mk-picture-prev")
+      .addEventListener("click", (event) => {
+        event.stopPropagation();
+        show(index - 1);
+      });
+    controls
+      .querySelector(".mk-picture-next")
+      .addEventListener("click", (event) => {
+        event.stopPropagation();
+        show(index + 1);
+      });
+    box.addEventListener("mk-group-change", () => show(0));
+    show(0);
+  }
+
+  function initDefinitionPictureCycler() {
+    const box = $(".mk-definition-picture");
+    if (!box) return;
+
+    const pictures = Array.from(box.querySelectorAll("img"))
+      .map((img) => {
+        const clone = img.cloneNode(true);
+        clone.removeAttribute("hidden");
+        return clone.outerHTML;
+      })
+      .filter((html) => html.includes("src="));
+    if (pictures.length <= 1) return;
+
+    const field = document.createElement("div");
+    field.className = "mk-definition-picture-field";
+    const controls = document.createElement("div");
+    controls.className = "mk-definition-picture-controls";
+    controls.innerHTML = `
+        <button type="button" class="mk-definition-picture-prev" aria-label="Previous definition picture"></button>
+        <button type="button" class="mk-definition-picture-next" aria-label="Next definition picture"></button>
+      `;
+    const dots = document.createElement("div");
+    dots.className = "mk-definition-picture-dots";
+    box.textContent = "";
+    box.append(field, controls, dots);
+
+    let index = 0;
+    function show(nextIndex = index) {
+      index = (nextIndex + pictures.length) % pictures.length;
+      field.innerHTML = pictures[index];
+      dots.innerHTML = pictures
+        .map(
+          (_, i) =>
+            `<span class="mk-picture-dot${i === index ? " is-active" : ""}"></span>`,
+        )
+        .join("");
+    }
+
+    controls
+      .querySelector(".mk-definition-picture-prev")
+      .addEventListener("click", (event) => {
+        event.stopPropagation();
+        show(index - 1);
+      });
+    controls
+      .querySelector(".mk-definition-picture-next")
+      .addEventListener("click", (event) => {
+        event.stopPropagation();
+        show(index + 1);
+      });
+    show(0);
+  }
+
+  initFrequencyDropdown();
+  initDefinitionPager();
+  initPitchDisplay();
+  initFieldGroups();
+  initPictureCycler();
+  initDefinitionPictureCycler();
+  initImageModal();
+})();
+</script>

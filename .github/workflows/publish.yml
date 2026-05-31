@@ -1,0 +1,131 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number to publish, for example 1.2.3"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set Up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Prepare Version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          VERSION="${VERSION#v}"
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must look like 1.2.3 or v1.2.3" >&2
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+          git fetch --tags
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists" >&2
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set Up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install APKG Builder
+        run: python3 -m pip install -r packages/note/script/requirements-apkg.txt
+
+      - name: Stamp Package Version
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require("node:fs");
+          const version = process.env.MANATAN_NOTE_TYPE_VERSION;
+          const file = "packages/note/package.json";
+          const pkg = JSON.parse(fs.readFileSync(file, "utf8"));
+          pkg.version = version;
+          fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
+        env:
+          MANATAN_NOTE_TYPE_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Check
+        run: pnpm check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build Static Templates
+        run: pnpm build
+
+      - name: Smoke Test Static Templates
+        run: pnpm smoke
+
+      - name: Build Release APKG
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+          mkdir -p release
+          pnpm preview:apkg
+          cp packages/note/.release/Manatan-NoteType.apkg "release/Manatan-NoteType-${VERSION}.apkg"
+
+      - name: Generate Release Notes
+        shell: bash
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          PREV_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+
+          {
+            echo "## Manatan-NoteType $TAG"
+            echo ""
+            echo "Static Anki template release."
+            echo ""
+            echo "### Assets"
+            echo "- Manatan-NoteType-${TAG}.apkg, including the local Kiku v1.10.2 sample screenshots and audio"
+            echo ""
+            if [ -n "$PREV_TAG" ]; then
+              echo "### Changes Since $PREV_TAG"
+              git log "$PREV_TAG..HEAD" --no-merges --pretty=format:"- %s (%h)"
+              echo ""
+            fi
+          } > RELEASE_NOTES.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          draft: false
+          prerelease: false
+          body_path: RELEASE_NOTES.md
+          files: release/*.apkg
