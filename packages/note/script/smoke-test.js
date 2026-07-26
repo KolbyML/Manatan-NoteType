@@ -93,10 +93,13 @@ async function run() {
   );
 
   await assert(
-    templates.style.includes("--mk-bg: oklch(25.33% 0.016 252.42)") &&
+    templates.style.includes("--mk-bg: oklch(100% 0 0)") &&
+      templates.style.includes("--mk-panel-2: oklch(98% 0 0)") &&
+      templates.style.includes(".card.nightMode") &&
+      templates.style.includes("--mk-bg: oklch(25.33% 0.016 252.42)") &&
       templates.style.includes("--mk-panel-2: oklch(23.26% 0.014 253.1)") &&
       templates.style.includes("--mk-fg: oklch(97.807% 0.029 256.847)"),
-    "Generated templates should default to the dark Kiku-style theme.",
+    "Generated templates should include matching light and dark themes.",
   );
 
   await assert(
@@ -136,11 +139,8 @@ async function run() {
     templates.back.includes("function initPictureCycler()") &&
       templates.back.includes("function wrapUngroupedSentenceNodes()") &&
       templates.back.includes(
-        "const siblingRoot = script?.previousElementSibling",
+        'querySelectorAll("#manatan-note-type.mk-back")',
       ) &&
-      templates.back.includes("const nestedRoot =") &&
-      templates.back.includes("const parentRoot =") &&
-      templates.back.includes('querySelector?.("#manatan-note-type")') &&
       templates.back.includes("function initDefinitionPictureCycler()") &&
       templates.back.includes("mk-picture-controls") &&
       templates.style.includes(".mk-picture-controls"),
@@ -152,6 +152,38 @@ async function run() {
       templates.back.includes("mk-frequency-toggle") &&
       templates.style.includes(".mk-frequency-menu:hover .mk-frequency-list"),
     "Generated templates are missing the frequency dropdown.",
+  );
+
+  await assert(
+    templates.back.includes('data-title="Main Definition"') &&
+      templates.back.includes('data-title="Glossary"') &&
+      templates.back.includes('class="mk-back-body"') &&
+      templates.back.includes('box.dataset.mkPagerReady = "true"') &&
+      templates.back.includes("mainDictionary") &&
+      templates.back.includes("normalizeHtml(mainContent)") &&
+      templates.back.includes('"h2, style, script, template"') &&
+      templates.style.includes(".mk-definition:not([data-mk-pager-ready])") &&
+      templates.style.includes("flex-direction: column-reverse"),
+    "Generated templates are missing the reliable definition pager.",
+  );
+
+  await assert(
+    !templates.back.includes('class="mk-reading"') &&
+      templates.back.includes("<rt>{{ExpressionReading}}</rt>") &&
+      templates.back.includes('data-reading="{{ExpressionReading}}"') &&
+      templates.back.includes('class="mk-external-links"') &&
+      templates.back.includes('class="mk-misc"') &&
+      templates.back.includes("function initTags()") &&
+      templates.style.includes(".mk-tag") &&
+      templates.style.includes(".replay-button svg circle") &&
+      templates.style.includes(".replay-button svg path"),
+    "Generated back template is missing Kiku-matched expression, link, audio, or footer presentation.",
+  );
+
+  await assert(
+    templates.back.includes("{{kanji:Sentence}}") &&
+      !templates.back.includes("{{furigana:Sentence}}"),
+    "Back template should match Kiku's safe sentence fallback.",
   );
 
   for (const field of expectedFields) {

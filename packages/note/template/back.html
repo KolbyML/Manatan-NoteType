@@ -38,21 +38,24 @@
           {{furigana:ExpressionFurigana}}
           {{/ExpressionFurigana}}
           {{^ExpressionFurigana}}
+          {{#ExpressionReading}}
+          <ruby>
+            {{Expression}}
+            <rt>{{ExpressionReading}}</rt>
+          </ruby>
+          {{/ExpressionReading}}
+          {{^ExpressionReading}}
           {{Expression}}
-          {{/ExpressionFurigana}}
-        </div>
-
-        <div class="mk-reading">
-          {{#ExpressionFurigana}}
-          {{kana:ExpressionFurigana}}
-          {{/ExpressionFurigana}}
-          {{^ExpressionFurigana}}
-          {{ExpressionReading}}
+          {{/ExpressionReading}}
           {{/ExpressionFurigana}}
         </div>
 
         {{#PitchPosition}}
-        <div class="mk-pitch" data-pitch-categories="{{PitchCategories}}">
+        <div
+          class="mk-pitch"
+          data-pitch-categories="{{PitchCategories}}"
+          data-reading="{{ExpressionReading}}"
+        >
           {{PitchPosition}}
         </div>
         {{/PitchPosition}}
@@ -92,58 +95,85 @@
       </button>
     </div>
 
-    <section class="mk-sentence">
-      {{#SentenceFurigana}}
-      {{furigana:SentenceFurigana}}
-      {{/SentenceFurigana}}
-      {{^SentenceFurigana}}
-      {{furigana:Sentence}}
-      {{/SentenceFurigana}}
-    </section>
-
-    <section class="mk-definition">
-      {{#DefinitionPicture}}
-      <div class="mk-definition-picture mk-zoomable-images">
-        {{DefinitionPicture}}
-      </div>
-      {{/DefinitionPicture}}
-
-      {{#SelectionText}}
-      <section
-        class="mk-definition-section mk-definition-page"
-        data-title="Selection Text"
-      >
-        <h2>Selection</h2>
-        <div class="mk-zoomable-images">{{SelectionText}}</div>
+    <div class="mk-back-body">
+      <section class="mk-sentence">
+        {{#SentenceFurigana}}
+        {{furigana:SentenceFurigana}}
+        {{/SentenceFurigana}}
+        {{^SentenceFurigana}}
+        {{kanji:Sentence}}
+        {{/SentenceFurigana}}
       </section>
-      {{/SelectionText}}
 
-      {{#MainDefinition}}
-      <section
-        class="mk-definition-section mk-definition-page"
-        data-title="Main Definition"
-      >
-        <h2>Definition</h2>
-        <div class="mk-zoomable-images">{{MainDefinition}}</div>
-      </section>
-      {{/MainDefinition}}
+      <section class="mk-definition">
+        {{#DefinitionPicture}}
+        <div class="mk-definition-picture mk-zoomable-images">
+          {{DefinitionPicture}}
+        </div>
+        {{/DefinitionPicture}}
 
-      {{#Glossary}}
-      <section
-        class="mk-definition-section mk-definition-page"
-        data-title="Glossary"
-      >
-        <h2>Glossary</h2>
-        <div class="mk-glossary mk-zoomable-images">{{Glossary}}</div>
+        {{#SelectionText}}
+        <section
+          class="mk-definition-section mk-definition-page"
+          data-title="Selection Text"
+        >
+          <h2>Selection</h2>
+          <div class="mk-zoomable-images">{{SelectionText}}</div>
+        </section>
+        {{/SelectionText}}
+
+        {{#MainDefinition}}
+        <section
+          class="mk-definition-section mk-definition-page"
+          data-title="Main Definition"
+        >
+          <h2>Definition</h2>
+          <div class="mk-zoomable-images">{{MainDefinition}}</div>
+        </section>
+        {{/MainDefinition}}
+
+        {{#Glossary}}
+        <section
+          class="mk-definition-section mk-definition-page"
+          data-title="Glossary"
+        >
+          <h2>Glossary</h2>
+          <div class="mk-glossary mk-zoomable-images">{{Glossary}}</div>
+        </section>
+        {{/Glossary}}
+
+        <div class="mk-external-links" aria-label="Dictionary links">
+          <a
+            href="https://jpdb.io/search?q={{Expression}}"
+            aria-label="Search JPDB"
+            title="JPDB"
+            >jp</a
+          >
+          <a
+            href="https://jisho.org/search/{{Expression}}"
+            aria-label="Search Jisho"
+            title="Jisho"
+            >▣</a
+          >
+          <a
+            href="https://www.google.co.jp/search?q={{Expression}}"
+            aria-label="Search Google"
+            title="Google"
+            >G</a
+          >
+        </div>
       </section>
-      {{/Glossary}}
-    </section>
+    </div>
 
     {{#MiscInfo}}
-    <details class="mk-misc">
-      <summary>Misc. info</summary>
+    <div class="mk-misc">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 11v5"></path>
+        <path d="M12 8h.01"></path>
+      </svg>
       <div>{{MiscInfo}}</div>
-    </details>
+    </div>
     {{/MiscInfo}}
   </main>
 
@@ -165,16 +195,8 @@
 
 <script>
 (() => {
-  const script = document.currentScript;
-  const siblingRoot = script?.previousElementSibling;
-  const nestedRoot = siblingRoot?.querySelector?.("#manatan-note-type");
-  const parentRoot =
-    script?.parentElement?.querySelector?.("#manatan-note-type");
-  const root = siblingRoot?.matches?.("#manatan-note-type")
-    ? siblingRoot
-    : (nestedRoot ??
-      parentRoot ??
-      document.querySelector("#manatan-note-type"));
+  const roots = document.querySelectorAll("#manatan-note-type.mk-back");
+  const root = roots[roots.length - 1];
   if (!root || root.dataset.mkReady) return;
   root.dataset.mkReady = "true";
 
@@ -204,15 +226,66 @@
     });
   }
 
+  function initTags() {
+    const container = $(".mk-tags");
+    if (!container || container.dataset.mkTagsReady) return;
+    container.dataset.mkTagsReady = "true";
+
+    const tags = container.textContent.trim().split(/\s+/).filter(Boolean);
+    container.textContent = "";
+    tags.forEach((tag) => {
+      const badge = document.createElement("span");
+      badge.className = "mk-tag";
+      badge.textContent = tag;
+      container.append(badge);
+    });
+  }
+
   function initDefinitionPager() {
     const box = $(".mk-definition");
     if (!box) return;
 
-    const allPages = $$(".mk-definition-page");
+    const mainDefinition = box.querySelector(
+      '.mk-definition-page[data-title="Main Definition"]',
+    );
+    const glossary = box.querySelector(
+      '.mk-definition-page[data-title="Glossary"]',
+    );
+    const mainContent = mainDefinition?.querySelector(".mk-zoomable-images");
+    const glossaryContent = glossary?.querySelector(".mk-glossary");
+    const normalizeHtml = (element) =>
+      element?.innerHTML.replace(/\s+/g, " ").trim() ?? "";
+
+    if (
+      mainContent &&
+      glossaryContent &&
+      normalizeHtml(mainContent) === normalizeHtml(glossaryContent)
+    ) {
+      glossary.remove();
+    } else {
+      const mainDictionary = mainDefinition
+        ?.querySelector(
+          ".yomitan-glossary > ol > li[data-dictionary], li[data-dictionary]",
+        )
+        ?.getAttribute("data-dictionary");
+      if (mainDictionary && glossary) {
+        glossary
+          .querySelectorAll(
+            ".yomitan-glossary > ol > li[data-dictionary], li[data-dictionary]",
+          )
+          .forEach((entry) => {
+            if (entry.getAttribute("data-dictionary") === mainDictionary) {
+              entry.remove();
+            }
+          });
+      }
+    }
+
+    const allPages = Array.from(box.querySelectorAll(".mk-definition-page"));
     const pages = allPages.filter((page) => {
       const clone = page.cloneNode(true);
-      clone.querySelectorAll("h2").forEach((heading) => {
-        heading.remove();
+      clone.querySelectorAll("h2, style, script, template").forEach((node) => {
+        node.remove();
       });
       return (
         clone.textContent.replace(/\u00a0/g, "").trim() ||
@@ -227,7 +300,11 @@
       box.hidden = true;
       return;
     }
-    if (pages.length <= 1) return;
+    box.dataset.mkPagerReady = "true";
+    if (pages.length <= 1) {
+      pages[0].hidden = false;
+      return;
+    }
 
     const nav = document.createElement("div");
     nav.className = "mk-definition-nav";
@@ -364,10 +441,8 @@
 
   function initPitchDisplay() {
     const pitch = $(".mk-pitch");
-    const reading = $(".mk-reading");
-    const readingText = reading?.textContent.trim();
-    if (!pitch || !reading || !readingText || pitch.dataset.mkPitchReady)
-      return;
+    const readingText = pitch?.dataset.reading?.trim();
+    if (!pitch || !readingText || pitch.dataset.mkPitchReady) return;
 
     const units = morae(readingText);
     if (!units.length) return;
@@ -383,7 +458,6 @@
     pitch.textContent = "";
     pitch.dataset.mkPitchReady = "true";
     pitch.hidden = true;
-    reading.hidden = true;
 
     pitchNumbers.forEach((downstep, pitchIndex) => {
       const type = pitchType(units.length, downstep, categories[pitchIndex]);
@@ -658,6 +732,7 @@
   }
 
   initFrequencyDropdown();
+  initTags();
   initDefinitionPager();
   initPitchDisplay();
   initFieldGroups();

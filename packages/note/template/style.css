@@ -24,25 +24,25 @@
 }
 
 :root {
-  --mk-bg: oklch(25.33% 0.016 252.42);
-  --mk-bg-soft: oklch(21.15% 0.012 254.09);
-  --mk-fg: oklch(97.807% 0.029 256.847);
+  --mk-bg: oklch(100% 0 0);
+  --mk-bg-soft: oklch(95% 0 0);
+  --mk-fg: oklch(21% 0.006 285.885);
   --mk-muted: color-mix(in srgb, var(--mk-fg) 70%, var(--mk-bg));
   --mk-subtle: color-mix(in srgb, var(--mk-fg) 50%, var(--mk-bg));
   --mk-faint: color-mix(in srgb, var(--mk-fg) 30%, var(--mk-bg));
-  --mk-panel: oklch(25.33% 0.016 252.42);
-  --mk-panel-2: oklch(23.26% 0.014 253.1);
-  --mk-border: oklch(21.15% 0.012 254.09);
+  --mk-panel: oklch(100% 0 0);
+  --mk-panel-2: oklch(98% 0 0);
+  --mk-border: oklch(95% 0 0);
   --mk-border-strong: color-mix(in srgb, var(--mk-fg) 20%, var(--mk-bg));
-  --mk-accent: oklch(58% 0.233 277.117);
-  --mk-accent-content: oklch(96% 0.018 272.314);
+  --mk-accent: oklch(45% 0.24 277.023);
+  --mk-accent-content: oklch(93% 0.034 272.788);
   --mk-accent-soft: color-mix(in srgb, var(--mk-accent) 18%, transparent);
   --mk-heiban: oklch(74% 0.16 232.661);
   --mk-atamadaka: oklch(71% 0.194 13.428);
   --mk-nakadaka: oklch(82% 0.189 84.429);
   --mk-odaka: oklch(76% 0.177 163.223);
   --mk-shadow:
-    0 10px 15px -3px rgb(0 0 0 / 0.28), 0 4px 6px -4px rgb(0 0 0 / 0.25);
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --mk-radius: 0.5rem;
   --mk-radius-sm: 0.25rem;
   --mk-max-width: 56rem;
@@ -55,15 +55,15 @@
   --mk-definition-order: 2;
   --mk-audio-bottom-display: none;
   --mk-font-serif:
-    "Hina Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP", "Noto Serif JP",
-    "Yu Mincho", serif;
+    "Hiragino Mincho ProN", "Noto Serif CJK JP", "Noto Serif JP", "Yu Mincho",
+    "Hina Mincho", serif;
   --mk-font-secondary:
-    "Klee One", "Hina Mincho", "Hiragino Mincho ProN", "Noto Serif CJK JP",
-    serif;
+    "Hiragino Mincho ProN", "Noto Serif CJK JP", "Noto Serif JP", "Yu Mincho",
+    "Klee One", "Hina Mincho", serif;
   --mk-font-sans:
-    "IBM Plex Sans JP", "Inter", "SF Pro Display", "Liberation Sans", "Segoe UI",
+    "Inter", "SF Pro Display", "Liberation Sans", "Segoe UI",
     "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Noto Sans JP", "Meiryo",
-    sans-serif;
+    "IBM Plex Sans JP", sans-serif;
 }
 
 .card.nightMode {
@@ -112,6 +112,10 @@
 .mk-front-main,
 .mk-back-main {
   width: 100%;
+}
+
+.mk-back-main {
+  padding-top: 2rem;
 }
 
 .mk-front-stack {
@@ -324,6 +328,11 @@ rt {
   align-items: stretch;
 }
 
+.mk-back-body {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
 .mk-expression-panel,
 .mk-picture,
 .mk-misc {
@@ -371,14 +380,6 @@ rt {
   color: var(--mk-muted);
   font-family: var(--mk-font-serif);
   font-size: 0.34em;
-}
-
-.mk-reading {
-  margin-top: 1.5rem;
-  color: var(--mk-muted);
-  font-family: var(--mk-font-secondary);
-  font-size: 1rem;
-  line-height: 1.5;
 }
 
 .mk-pitch {
@@ -587,7 +588,7 @@ rt {
 .mk-sentence {
   order: var(--mk-sentence-order);
   width: min(100%, 820px);
-  margin: 2rem auto 0;
+  margin: 1rem auto 0;
   color: var(--mk-fg);
   font-size: 1.5rem;
   line-height: calc(2 / 1.5);
@@ -617,6 +618,12 @@ rt {
 .mk-sentence rt {
   color: var(--mk-muted);
   font-size: 0.42em;
+  visibility: hidden;
+}
+
+.mk-sentence:hover rt,
+.mk-sentence:focus-within rt {
+  visibility: visible;
 }
 
 .mk-field-group-nav {
@@ -670,7 +677,7 @@ rt {
 .mk-definition {
   position: relative;
   order: var(--mk-definition-order);
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 0;
   text-align: left;
   font-family: var(--mk-font-sans);
@@ -740,6 +747,12 @@ rt {
   border-radius: var(--mk-radius);
   background: var(--mk-panel-2);
   color: var(--mk-fg);
+}
+
+.mk-definition:not([data-mk-pager-ready])
+  .mk-definition-page
+  ~ .mk-definition-page {
+  display: none;
 }
 
 .mk-definition-side-controls {
@@ -818,6 +831,7 @@ rt {
 .mk-glossary ul,
 .mk-definition ol,
 .mk-definition ul {
+  margin-block: 0;
   padding-inline-start: 1.45em;
 }
 
@@ -913,24 +927,60 @@ rt {
   color: var(--mk-accent);
 }
 
+.mk-external-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font: 700 0.75rem / 1 var(--mk-font-sans);
+}
+
+.mk-external-links a {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--mk-subtle);
+  text-decoration: none;
+}
+
+.mk-external-links a:first-child {
+  color: #777;
+}
+
+.mk-external-links a:nth-child(2) {
+  color: oklch(76% 0.177 163.223);
+}
+
+.mk-external-links a:last-child {
+  color: #4285f4;
+}
+
 .mk-misc {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.5rem;
-  text-align: left;
+  text-align: center;
   font-family: var(--mk-font-sans);
   font-size: 0.875rem;
   line-height: calc(1.25 / 0.875);
   background: var(--mk-panel-2);
 }
 
-.mk-misc summary {
+.mk-misc svg {
+  width: 1rem;
+  min-width: 1rem;
+  height: 1rem;
   color: var(--mk-muted);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.mk-misc > div {
-  margin-top: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
 }
 
 .mk-footer {
@@ -942,12 +992,18 @@ rt {
 }
 
 .mk-tags {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
   max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.mk-tag {
   padding: 0.125rem 0.5rem;
-  border: 1px solid var(--mk-border);
-  border-radius: var(--mk-radius);
-  background: var(--mk-panel-2);
+  border-radius: 999px;
+  background: var(--mk-accent-soft);
+  color: var(--mk-accent);
   overflow-wrap: anywhere;
 }
 
@@ -976,6 +1032,16 @@ rt {
 .soundLink svg {
   width: 2rem;
   height: 2rem;
+}
+
+.replay-button svg circle,
+.soundLink svg circle {
+  fill: none;
+}
+
+.replay-button svg path,
+.soundLink svg path {
+  fill: currentColor;
 }
 
 .replay-button,
@@ -1066,23 +1132,29 @@ rt {
     flex-direction: row;
   }
 
+  .mk-back-body {
+    flex-direction: column;
+  }
+
   .mk-expression-panel {
     min-height: 14rem;
   }
 
   .mk-picture {
     min-height: var(--mk-main-picture-size-sm);
-    width: min(50%, 25rem);
-    flex: 0 0 min(50%, 25rem);
+    width: auto;
+    flex: 0 1 auto;
     max-width: 50%;
     align-items: center;
   }
 
   .mk-picture-field {
+    width: auto;
     height: var(--mk-main-picture-size-sm);
   }
 
   .mk-picture-field img {
+    width: auto;
     max-height: var(--mk-main-picture-size-sm);
   }
 
