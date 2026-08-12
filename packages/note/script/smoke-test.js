@@ -181,6 +181,18 @@ async function run() {
   );
 
   await assert(
+    templates.back.includes('class="mk-expression-furigana-source"') &&
+      templates.back.includes('class="mk-expression-furigana-output"') &&
+      templates.back.includes("function initExpressionFurigana()") &&
+      templates.back.includes(
+        "const parseFurigana = (function parseFurigana(input)",
+      ) &&
+      templates.back.includes("initExpressionFurigana();") &&
+      !templates.back.includes("__MANATAN_PARSE_FURIGANA__"),
+    "Generated back template is missing the Kiku-derived furigana parser.",
+  );
+
+  await assert(
     templates.back.includes("{{kanji:Sentence}}") &&
       !templates.back.includes("{{furigana:Sentence}}"),
     "Back template should match Kiku's safe sentence fallback.",

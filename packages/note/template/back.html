@@ -35,7 +35,12 @@
       <div class="mk-expression-panel">
         <div class="mk-back-expression">
           {{#ExpressionFurigana}}
-          {{furigana:ExpressionFurigana}}
+          <template class="mk-expression-furigana-source">
+            {{ExpressionFurigana}}
+          </template>
+          <span class="mk-expression-furigana-output"
+            >{{furigana:ExpressionFurigana}}</span
+          >
           {{/ExpressionFurigana}}
           {{^ExpressionFurigana}}
           {{#ExpressionReading}}
@@ -202,6 +207,47 @@
 
   const $ = (selector) => root.querySelector(selector);
   const $$ = (selector) => Array.from(root.querySelectorAll(selector));
+  const parseFurigana = __MANATAN_PARSE_FURIGANA__;
+
+  function initExpressionFurigana() {
+    const source = $(".mk-expression-furigana-source");
+    const output = $(".mk-expression-furigana-output");
+    if (!source || !output || output.dataset.mkFuriganaReady) return;
+
+    const raw = source.innerHTML.trim();
+    if (!raw) return;
+
+    const sourceContent = source.content.cloneNode(true);
+    if (sourceContent.querySelector("ruby")) {
+      output.replaceChildren(sourceContent);
+      output.dataset.mkFuriganaReady = "true";
+      return;
+    }
+
+    if (!raw.includes("[")) return;
+    const items = parseFurigana(raw);
+    if (!items.some((item) => item.type === "ruby")) return;
+
+    const fragment = document.createDocumentFragment();
+    items.forEach((item) => {
+      if (item.type === "text") {
+        fragment.append(document.createTextNode(item.text.trim()));
+        return;
+      }
+
+      const ruby = document.createElement("ruby");
+      ruby.append(document.createTextNode(item.text.trim()));
+      if (item.reading.trim() || item.reading === " ") {
+        const reading = document.createElement("rt");
+        reading.textContent = item.reading;
+        ruby.append(reading);
+      }
+      fragment.append(ruby);
+    });
+
+    output.replaceChildren(fragment);
+    output.dataset.mkFuriganaReady = "true";
+  }
 
   function initFrequencyDropdown() {
     const menu = $(".mk-frequency-menu");
@@ -731,6 +777,7 @@
     show(0);
   }
 
+  initExpressionFurigana();
   initFrequencyDropdown();
   initTags();
   initDefinitionPager();

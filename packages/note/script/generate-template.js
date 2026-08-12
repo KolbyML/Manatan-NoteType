@@ -1,4 +1,5 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { parseFurigana } from "../tools/furigana.js";
 import { paths } from "../tools/paths.js";
 import { getVersion, log } from "../tools/util.js";
 
@@ -48,7 +49,9 @@ class Script {
     log.yellow("Generating static Manatan-NoteType templates");
 
     const front = src.front.replace("__VERSION__", version);
-    const back = src.back.replace("__VERSION__", version);
+    const back = src.back
+      .replace("__VERSION__", version)
+      .replace("__MANATAN_PARSE_FURIGANA__", `(${parseFurigana.toString()})`);
     const style = src.style.replace("__VERSION__", version);
 
     return { front, back, style };

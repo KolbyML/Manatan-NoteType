@@ -11,6 +11,7 @@
     "check": "biome check .",
     "check:write": "biome check --write .",
     "smoke": "turbo run smoke",
+    "test": "turbo run test",
     "preview:apkg": "turbo run preview:apkg",
     "copy-anki-build": "turbo run copy-anki-build",
     "generate-template": "turbo run generate-template",

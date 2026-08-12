@@ -7,6 +7,7 @@
     "build": "node ./script/generate-template.js",
     "typecheck": "tsc -p tsconfig.json",
     "smoke": "node ./script/smoke-test.js",
+    "test": "node --test ./test/*.test.js",
     "preview:apkg": "node ./script/generate-template.js && python3 ./script/generate-preview-apkg.py",
     "copy-anki-build": "node ./script/copy-anki-build.js",
     "generate-template": "node ./script/generate-template.js",
