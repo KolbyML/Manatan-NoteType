@@ -308,23 +308,52 @@
       normalizeHtml(mainContent) === normalizeHtml(glossaryContent)
     ) {
       glossary.remove();
-    } else {
-      const mainDictionary = mainDefinition
-        ?.querySelector(
-          ".yomitan-glossary > ol > li[data-dictionary], li[data-dictionary]",
-        )
-        ?.getAttribute("data-dictionary");
-      if (mainDictionary && glossary) {
-        glossary
-          .querySelectorAll(
-            ".yomitan-glossary > ol > li[data-dictionary], li[data-dictionary]",
-          )
-          .forEach((entry) => {
-            if (entry.getAttribute("data-dictionary") === mainDictionary) {
-              entry.remove();
-            }
+    } else if (mainContent && glossaryContent) {
+      // Single-dictionary exports use a scoped span; older grouped exports
+      // use list items. Compare actual definitions, not just their dictionary
+      // name, so another sense from the same dictionary is never discarded.
+      const dictionaryEntries = (container) => {
+        const describe = (node, content, header) => {
+          const clone = content.cloneNode(true);
+          if (content === node && header)
+            clone.querySelector(":scope > i")?.remove();
+          clone.querySelectorAll("style, script, template").forEach((item) => {
+            item.remove();
           });
-      }
+          return {
+            node,
+            dictionary: content.getAttribute("data-dictionary") || "",
+            header: header?.textContent.replace(/\s+/g, " ").trim() || "",
+            body: normalizeHtml(clone),
+          };
+        };
+        const entries = Array.from(
+          container.querySelectorAll("li[data-dictionary]"),
+          (node) => describe(node, node, node.querySelector(":scope > i")),
+        );
+        container.querySelectorAll(".yomitan-glossary").forEach((node) => {
+          if (node.querySelector("li[data-dictionary]")) return;
+          const content =
+            node.querySelector(":scope > [data-dictionary]") || node;
+          entries.push(
+            describe(node, content, node.querySelector(":scope > i")),
+          );
+        });
+        return entries;
+      };
+      const mainDictionaryEntries = dictionaryEntries(mainContent);
+      dictionaryEntries(glossaryContent).forEach((entry) => {
+        const repeated = mainDictionaryEntries.some((main) => {
+          const sameDictionary =
+            main.dictionary && entry.dictionary
+              ? main.dictionary === entry.dictionary
+              : main.header && main.header === entry.header;
+          const sameHeader =
+            !main.header || !entry.header || main.header === entry.header;
+          return sameDictionary && sameHeader && main.body === entry.body;
+        });
+        if (repeated) entry.node.remove();
+      });
     }
 
     const allPages = Array.from(box.querySelectorAll(".mk-definition-page"));
