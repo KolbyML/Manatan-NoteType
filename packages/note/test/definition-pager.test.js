@@ -15,9 +15,10 @@ const single = (dictionary, body) =>
   `<div class="yomitan-glossary"><i>(${dictionary})</i> <span data-dictionary="${dictionary}">${body}</span></div>`;
 const grouped = (...entries) =>
   `<div class="yomitan-glossary"><ol>${entries.map(([dictionary, body]) => `<li data-dictionary="${dictionary}"><i>(${dictionary})</i> ${body}</li>`).join("")}</ol></div>`;
-function run(main, glossary, selection = "") {
+function run(main, glossary, selection = "", picture = "") {
   const { document } =
     parseHTML(`<html><body><div id="manatan-note-type"><div class="mk-definition">
+    ${picture ? `<div class="mk-definition-picture">${picture}</div>` : ""}
     ${selection ? `<section class="mk-definition-page" data-title="Selection Text"><h2>Selection</h2><div class="mk-zoomable-images">${selection}</div></section>` : ""}
     <section class="mk-definition-page" data-title="Main Definition"><h2>Definition</h2><div class="mk-zoomable-images">${main}</div></section>
     <section class="mk-definition-page" data-title="Glossary"><h2>Glossary</h2><div class="mk-glossary">${glossary}</div></section>
@@ -35,6 +36,13 @@ function run(main, glossary, selection = "") {
     pages: [...box.querySelectorAll(".mk-definition-page")],
   };
 }
+
+test("keeps a standalone definition picture visible without a text page", () => {
+  const { box } = run("", "", "", '<img src="definition.png">');
+  assert.equal(box.hidden, false);
+  assert.equal(box.querySelector(".mk-definition-nav"), null);
+  assert.equal(run("", "").box.hidden, true);
+});
 
 test("keeps different targeted dictionaries even with equal counts and meanings", () => {
   const { box, glossary, pages } = run(

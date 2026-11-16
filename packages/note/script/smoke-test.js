@@ -150,7 +150,7 @@ async function run() {
   await assert(
     templates.back.includes("function initFrequencyDropdown()") &&
       templates.back.includes("mk-frequency-toggle") &&
-      templates.style.includes(".mk-frequency-menu:hover .mk-frequency-list"),
+      templates.style.includes(".mk-frequency-menu.is-open .mk-frequency-list"),
     "Generated templates are missing the frequency dropdown.",
   );
 

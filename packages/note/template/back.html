@@ -148,20 +148,23 @@
         {{/Glossary}}
 
         <div class="mk-external-links" aria-label="Dictionary links">
+          <template class="mk-link-expression">{{Expression}}</template>
           <a
-            href="https://jpdb.io/search?q={{Expression}}"
+            href="https://jpdb.io/search"
+            data-search-query
             aria-label="Search JPDB"
             title="JPDB"
             >jp</a
           >
           <a
-            href="https://jisho.org/search/{{Expression}}"
+            href="https://jisho.org/search/"
             aria-label="Search Jisho"
             title="Jisho"
             >▣</a
           >
           <a
-            href="https://www.google.co.jp/search?q={{Expression}}"
+            href="https://www.google.co.jp/search"
+            data-search-query
             aria-label="Search Google"
             title="Google"
             >G</a
@@ -214,9 +217,6 @@
     const output = $(".mk-expression-furigana-output");
     if (!source || !output || output.dataset.mkFuriganaReady) return;
 
-    const raw = source.innerHTML.trim();
-    if (!raw) return;
-
     const sourceContent = source.content.cloneNode(true);
     if (sourceContent.querySelector("ruby")) {
       output.replaceChildren(sourceContent);
@@ -224,6 +224,7 @@
       return;
     }
 
+    const raw = sourceContent.textContent.trim();
     if (!raw.includes("[")) return;
     const items = parseFurigana(raw);
     if (!items.some((item) => item.type === "ruby")) return;
@@ -249,27 +250,53 @@
     output.dataset.mkFuriganaReady = "true";
   }
 
+  function initExternalLinks() {
+    const expression = $(".mk-link-expression")?.content.textContent.trim();
+    if (!expression) return;
+
+    $$(".mk-external-links a").forEach((link) => {
+      const url = new URL(link.href);
+      if (link.hasAttribute("data-search-query")) {
+        url.searchParams.set("q", expression);
+      } else {
+        url.pathname += encodeURIComponent(expression);
+      }
+      link.href = url.href;
+    });
+  }
+
   function initFrequencyDropdown() {
     const menu = $(".mk-frequency-menu");
     const toggle = $(".mk-frequency-toggle");
     if (!menu || !toggle) return;
 
+    let pinned = false;
     function setOpen(open) {
       menu.classList.toggle("is-open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
     }
 
-    toggle.addEventListener("click", (event) => {
-      event.stopPropagation();
-      setOpen(!menu.classList.contains("is-open"));
+    function close() {
+      pinned = false;
+      setOpen(false);
+    }
+
+    toggle.addEventListener("click", () => {
+      pinned = !pinned;
+      setOpen(pinned);
+    });
+
+    menu.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse") setOpen(true);
+    });
+    menu.addEventListener("pointerleave", () => {
+      if (!pinned) setOpen(false);
     });
 
     root.addEventListener("click", (event) => {
-      if (!menu.contains(event.target)) setOpen(false);
+      if (!menu.contains(event.target)) close();
     });
-    root.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setOpen(false);
-    });
+    menu.addEventListener("mk-close-frequency", close);
   }
 
   function initTags() {
@@ -371,15 +398,11 @@
     allPages.forEach((page) => {
       page.hidden = !activePages.has(page);
     });
-    if (pages.length === 0) {
-      box.hidden = true;
-      return;
-    }
     box.dataset.mkPagerReady = "true";
-    if (pages.length <= 1) {
-      pages[0].hidden = false;
-      return;
-    }
+    box.hidden =
+      pages.length === 0 &&
+      !box.querySelector(".mk-definition-picture img, .mk-definition-picture svg");
+    if (pages.length < 2) return;
 
     const nav = document.createElement("div");
     nav.className = "mk-definition-nav";
@@ -422,12 +445,45 @@
       });
     title.addEventListener("click", () => show(index + 1));
 
-    root.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft") show(index - 1);
-      if (event.key === "ArrowRight") show(index + 1);
-    });
-
     show(0);
+  }
+
+  function initCardShortcuts() {
+    const page = document.documentElement;
+    if (page.dataset.mkCardShortcuts) return;
+    page.dataset.mkCardShortcuts = "true";
+
+    // Anki reuses the document between reviews. Resolve the active card
+    // on each key press so previous cards cannot keep handling keys.
+    document.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Escape"].includes(event.key)) return;
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey
+      ) return;
+      if (event.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+
+      const cards = document.querySelectorAll("#manatan-note-type.mk-back");
+      const card = cards[cards.length - 1];
+      if (!card || card.querySelector("dialog[open]")) return;
+
+      if (event.key === "Escape") {
+        card.querySelector(".mk-frequency-menu.is-open")
+          ?.dispatchEvent(new Event("mk-close-frequency"));
+        return;
+      }
+
+      const button = card.querySelector(
+        event.key === "ArrowLeft" ? ".mk-definition-prev" : ".mk-definition-next",
+      );
+      if (button) {
+        event.preventDefault();
+        button.click();
+      }
+    });
   }
 
   function initImageModal() {
@@ -456,7 +512,8 @@
   }
 
   function morae(text) {
-    const small = new Set("ぁぃぅぇぉゃゅょゎァィゥェォャュョヮっッ");
+    // Small tsu marks its own mora, unlike the small kana in a digraph.
+    const small = new Set("ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ");
     return Array.from(text.trim()).reduce((list, char) => {
       if (small.has(char) && list.length) {
         list[list.length - 1] += char;
@@ -467,41 +524,20 @@
     }, []);
   }
 
-  function pitchType(moraCount, pitchNum, category) {
-    const normalized = category?.trim().toLowerCase();
-    const categoryMap = {
-      平板: "heiban",
-      頭高: "atamadaka",
-      中高: "nakadaka",
-      尾高: "odaka",
-      起伏: "kifuku",
-    };
-    const mapped = categoryMap[normalized] || normalized;
-    if (["heiban", "atamadaka", "nakadaka", "odaka", "kifuku"].includes(mapped))
-      return mapped;
+  function pitchType(moraCount, pitchNum, hasKifuku) {
     if (pitchNum === 0) return "heiban";
+    if (hasKifuku) return "kifuku";
     if (pitchNum === 1) return "atamadaka";
-    if (pitchNum > 1 && pitchNum === moraCount) return "odaka";
-    if (pitchNum > 1 && pitchNum < moraCount) return "nakadaka";
-    return "";
+    return pitchNum === moraCount ? "odaka" : "nakadaka";
   }
 
-  function pitchPattern(moraCount, pitchNum, type) {
-    if (moraCount < 1) return [];
-    if (type === "heiban" || pitchNum === 0)
-      return [0, ...Array(moraCount - 1).fill(1), 1];
-    if (type === "atamadaka" || pitchNum === 1)
-      return [1, ...Array(moraCount - 1).fill(0), 0];
-    if (type === "odaka" || pitchNum === moraCount)
-      return [0, ...Array(moraCount - 1).fill(1), 0];
-    if (type === "nakadaka" || (pitchNum > 1 && pitchNum < moraCount))
-      return [
-        0,
-        ...Array(pitchNum - 1).fill(1),
-        ...Array(moraCount - pitchNum).fill(0),
-        0,
-      ];
-    return [];
+  function pitchPattern(moraCount, pitchNum) {
+    if (moraCount < 1 || pitchNum > moraCount) return [];
+    return Array.from({ length: moraCount + 1 }, (_, index) => {
+      if (pitchNum === 0) return index > 0 ? 1 : 0;
+      if (pitchNum === 1) return index === 0 ? 1 : 0;
+      return index > 0 && index < pitchNum ? 1 : 0;
+    });
   }
 
   function extractPitchNumbers(text) {
@@ -514,29 +550,52 @@
     );
   }
 
+  function getPitchReading(pitch) {
+    const reading = pitch.dataset.reading?.trim();
+    if (reading) return reading;
+
+    const expression = $(".mk-back-expression")?.cloneNode(true);
+    if (!expression) return "";
+    expression.querySelectorAll("template, rp").forEach((node) => node.remove());
+    expression.querySelectorAll("ruby").forEach((ruby) => {
+      const reading = ruby.querySelector("rt")?.textContent.trim();
+      if (reading) {
+        ruby.replaceWith(document.createTextNode(reading));
+      } else {
+        ruby.querySelector("rt")?.remove();
+      }
+    });
+    const kana = expression.textContent.replace(/\s+/g, "").normalize();
+    return /^[\p{Script=Hiragana}\p{Script=Katakana}ー]+$/u.test(kana) ? kana : "";
+  }
+
   function initPitchDisplay() {
     const pitch = $(".mk-pitch");
-    const readingText = pitch?.dataset.reading?.trim();
-    if (!pitch || !readingText || pitch.dataset.mkPitchReady) return;
+    if (!pitch || pitch.dataset.mkPitchReady) return;
 
-    const units = morae(readingText);
+    const units = morae(getPitchReading(pitch));
     if (!units.length) return;
 
-    const pitchNumbers = extractPitchNumbers(pitch.textContent);
+    const pitchNumbers = extractPitchNumbers(pitch.textContent).filter(
+      (position) => position <= units.length,
+    );
     if (!pitchNumbers.length) return;
 
     const categories = (pitch.dataset.pitchCategories || "")
       .split(",")
-      .map((category) => category.trim())
+      .map((category) => category.trim().toLowerCase())
       .filter(Boolean);
+    // PitchCategories is a set of labels for the entry. Only Kifuku
+    // carries information beyond each graph's numeric downstep.
+    const hasKifuku = categories.includes("kifuku") || categories.includes("起伏");
 
     pitch.textContent = "";
     pitch.dataset.mkPitchReady = "true";
     pitch.hidden = true;
 
     pitchNumbers.forEach((downstep, pitchIndex) => {
-      const type = pitchType(units.length, downstep, categories[pitchIndex]);
-      const pattern = pitchPattern(units.length, downstep, type);
+      const type = pitchType(units.length, downstep, hasKifuku);
+      const pattern = pitchPattern(units.length, downstep);
       if (pitchIndex === 0 && type) root.dataset.pitchType = type;
 
       const item = document.createElement("div");
@@ -713,6 +772,7 @@
       }
 
       const active = activePictures();
+      box.hidden = active.length === 0;
       if (!active.length) {
         background.textContent = "";
         field.textContent = "";
@@ -807,7 +867,9 @@
   }
 
   initExpressionFurigana();
+  initExternalLinks();
   initFrequencyDropdown();
+  initCardShortcuts();
   initTags();
   initDefinitionPager();
   initPitchDisplay();

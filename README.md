@@ -50,7 +50,7 @@ Manatan-NoteType keeps Kiku-style field names so existing mining notes can move 
 - `IsWordAndSentenceCard`: shows expression plus sentence hint on the front.
 - `IsClickCard`: lets the front switch from expression to sentence by tapping/clicking.
 - `IsSentenceCard`: shows the sentence on the front.
-- `IsAudioCard`: shows the sentence and plays audio on the front.
+- `IsAudioCard`: shows the sentence and plays audio on the front. If the audio field contains grouped clips, the front shows all their sentence contexts in a list for Anki's playback queue.
 - `PitchPosition`: numeric pitch accent position, used to draw the static pitch graph.
 - `PitchCategories`: kept for compatibility.
 - `Frequency`: frequency details.

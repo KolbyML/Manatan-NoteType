@@ -10,7 +10,7 @@
     <div class="mk-front-stack">
       {{#IsClickCard}}
       <label class="mk-click-card mk-front-click-card">
-        <input type="checkbox">
+        <input type="checkbox" aria-label="Show sentence">
         <span class="mk-hero mk-front-hero">
           <span class="mk-expression-panel">
             <span class="mk-click-expression">{{Expression}}</span>
@@ -38,6 +38,7 @@
           </div>
         </div>
       </section>
+      {{/IsClickCard}}
 
       <div class="mk-field-group-nav mk-front-field-group-nav" hidden>
         <button
@@ -59,7 +60,6 @@
           ›
         </button>
       </div>
-      {{/IsClickCard}}
 
       {{#IsSentenceCard}}
       <div class="mk-front-sentence">{{kanji:Sentence}}</div>
@@ -141,7 +141,10 @@
         flushWrapper();
         return;
       }
-      if (!el.textContent.replace(/\u00a0/g, "").trim()) return;
+      if (
+        !el.textContent.replace(/\u00a0/g, "").trim() &&
+        !(wrapper && el.matches("br"))
+      ) return;
       ensureWrapper(node).append(node);
     });
   }
@@ -156,6 +159,13 @@
     $$(".mk-front-sentence, .mk-click-sentence").forEach((sentence) => {
       wrapUngroupedSentenceNodes(sentence);
     });
+
+    // Anki queues native sound markers before running this script. Keep all
+    // of their contexts visible on the question side of grouped audio cards.
+    if ($(".mk-front-audio .mk-audio-row [data-group-id]")) {
+      $(".mk-front-audio").classList.add("mk-front-grouped-audio");
+      return;
+    }
 
     const groupEls = $$(
       ".mk-front-sentence [data-group-id], .mk-click-sentence [data-group-id], .mk-front-audio .mk-audio-row [data-group-id]",
@@ -195,10 +205,15 @@
       if (date) date.textContent = groupDate(id);
     }
 
-    if (nav && prev && next && count && date && !$(".mk-click-card")) {
+    if (nav && prev && next && count && date) {
       prev.addEventListener("click", () => show(index - 1));
       next.addEventListener("click", () => show(index + 1));
-      nav.hidden = false;
+      const clickToggle = $(".mk-click-card input");
+      const updateNav = () => {
+        nav.hidden = clickToggle ? !clickToggle.checked : false;
+      };
+      clickToggle?.addEventListener("change", updateNav);
+      updateNav();
     }
     root.addEventListener("keydown", (event) => {
       if (event.key === "h") show(index - 1);
