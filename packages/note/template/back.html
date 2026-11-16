@@ -401,7 +401,9 @@
     box.dataset.mkPagerReady = "true";
     box.hidden =
       pages.length === 0 &&
-      !box.querySelector(".mk-definition-picture img, .mk-definition-picture svg");
+      !box.querySelector(
+        ".mk-definition-picture img, .mk-definition-picture svg",
+      );
     if (pages.length < 2) return;
 
     const nav = document.createElement("div");
@@ -463,21 +465,26 @@
         event.ctrlKey ||
         event.metaKey ||
         event.shiftKey
-      ) return;
-      if (event.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+      )
+        return;
+      if (event.target?.closest?.("input, textarea, select, [contenteditable]"))
+        return;
 
       const cards = document.querySelectorAll("#manatan-note-type.mk-back");
       const card = cards[cards.length - 1];
       if (!card || card.querySelector("dialog[open]")) return;
 
       if (event.key === "Escape") {
-        card.querySelector(".mk-frequency-menu.is-open")
+        card
+          .querySelector(".mk-frequency-menu.is-open")
           ?.dispatchEvent(new Event("mk-close-frequency"));
         return;
       }
 
       const button = card.querySelector(
-        event.key === "ArrowLeft" ? ".mk-definition-prev" : ".mk-definition-next",
+        event.key === "ArrowLeft"
+          ? ".mk-definition-prev"
+          : ".mk-definition-next",
       );
       if (button) {
         event.preventDefault();
@@ -556,7 +563,9 @@
 
     const expression = $(".mk-back-expression")?.cloneNode(true);
     if (!expression) return "";
-    expression.querySelectorAll("template, rp").forEach((node) => node.remove());
+    expression.querySelectorAll("template, rp").forEach((node) => {
+      node.remove();
+    });
     expression.querySelectorAll("ruby").forEach((ruby) => {
       const reading = ruby.querySelector("rt")?.textContent.trim();
       if (reading) {
@@ -566,7 +575,9 @@
       }
     });
     const kana = expression.textContent.replace(/\s+/g, "").normalize();
-    return /^[\p{Script=Hiragana}\p{Script=Katakana}ー]+$/u.test(kana) ? kana : "";
+    return /^[\p{Script=Hiragana}\p{Script=Katakana}ー]+$/u.test(kana)
+      ? kana
+      : "";
   }
 
   function initPitchDisplay() {
@@ -587,7 +598,8 @@
       .filter(Boolean);
     // PitchCategories is a set of labels for the entry. Only Kifuku
     // carries information beyond each graph's numeric downstep.
-    const hasKifuku = categories.includes("kifuku") || categories.includes("起伏");
+    const hasKifuku =
+      categories.includes("kifuku") || categories.includes("起伏");
 
     pitch.textContent = "";
     pitch.dataset.mkPitchReady = "true";
