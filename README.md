@@ -43,6 +43,7 @@ Manatan-NoteType keeps Kiku-style field names so existing mining notes can move 
 - `DefinitionPicture`: picture shown above the definition pages.
 - `Sentence`: example sentence.
 - `SentenceFurigana`: example sentence with Anki furigana markup.
+- `SentenceTranslation`: optional secondary subtitle or translation, displayed below the sentence on the back. Map this field to **Secondary Subtitle** in Manatan to save the existing secondary track.
 - `SentenceAudio`: sentence audio.
 - `Picture`: main card image.
 - `Glossary`: full dictionary or Yomitan glossary HTML.

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+import zipfile
 from pathlib import Path
 
 try:
@@ -59,6 +61,7 @@ FIELD_NAMES = [
     "MiscInfo",
     "Tags",
     "CardID",
+    "SentenceTranslation",
 ]
 
 # Text fields mirror the Kiku v1.10.2 sample notes, with local media from the
@@ -74,6 +77,7 @@ SAMPLE_NOTES = [
         "DefinitionPicture": "",
         "Sentence": "それは 死を<b>恐れない</b>ことだよ",
         "SentenceFurigana": "",
+        "SentenceTranslation": "It means not being afraid of death.",
         "SentenceAudio": "[sound:SubsPlease Maou-jou de Oyasumi - 11 (1080p) 28DCA1EF.mkv_830704.7710000001_834832.7710000001.mp3]",
         "Picture": '<div><img src="subsplease maou-jou de oyasumi - 11 (1080p) 28dca1ef.mkv_833529.webp"></div>',
         "Glossary": "",
@@ -100,6 +104,7 @@ SAMPLE_NOTES = [
         "DefinitionPicture": "",
         "Sentence": '<span data-group-id="11">これで 少しは<br>世の中に<b>貢献</b>できるかな</span><span data-group-id="10">どうせ勇者の捕縛に<b>貢献</b>すれば➡</span>このお店に<b>貢献</b>するために―',
         "SentenceFurigana": "",
+        "SentenceTranslation": "",
         "SentenceAudio": '<span data-group-id="11">[sound:Anime_Time_Solo_Leveli_925842_K4AlcB99.mp3]</span><span data-group-id="10">[sound:SubsPlease Tate no Yuusha no Nariagari S3 - 10 (1080p) BCA53DD5.mkv_118779-a512c7dd2b6572854ecfd7760d9f297cea529b66.mp3]</span><span data-group-id="0">[sound:CBT Gochuumon wa Usagi Desuka S01E09 BDrip 1920x1080 x264 FLAC 9092049A.mkv_955687.289_958481.289.mp3]</span>',
         "Picture": '<img data-group-id="11" src="Anime_Time_Solo_Leveli_928960_pzThqpQf.jpeg"><img data-group-id="10" src="SubsPlease Tate no Yuusha no Nariagari S3 - 10 (1080p) BCA53DD5.mkv_1190221.jpeg"><div><img src="cbt gochuumon wa usagi desuka s01e09 bdrip 1920x1080 x264 flac 9092049a.mkv_957803.webp"></div>',
         "Glossary": "",
@@ -170,6 +175,14 @@ def write_apkg():
     package = genanki.Package(deck)
     package.media_files = [str(path) for path in media_files]
     package.write_to_file(str(OUT))
+    revision = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+    with zipfile.ZipFile(OUT, "a") as archive:
+        archive.writestr("note-type-update.json", json.dumps({
+            "title": "Manatan-NoteType",
+            "modelId": MODEL_ID,
+            "revision": revision,
+            "indexUrl": "https://api.github.com/repos/KolbyML/Manatan-NoteType/releases/latest",
+        }))
     print(f"✅ Generated {OUT.relative_to(ROOT)}")
 
 

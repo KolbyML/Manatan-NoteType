@@ -619,6 +619,15 @@ rt {
   line-height: calc(2 / 1.5);
 }
 
+.mk-sentence-translation {
+  order: var(--mk-sentence-order);
+  width: min(100%, 820px);
+  margin: 0.5rem auto 0;
+  color: var(--mk-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
 .mk-sentence b {
   color: var(--mk-accent);
   font-weight: inherit;

@@ -41,6 +41,7 @@ const expectedFields = [
   "DefinitionPicture",
   "Sentence",
   "SentenceFurigana",
+  "SentenceTranslation",
   "SentenceAudio",
   "Picture",
   "Glossary",
@@ -137,7 +138,7 @@ async function run() {
 
   await assert(
     templates.back.includes("function initPictureCycler()") &&
-      templates.back.includes("function wrapUngroupedSentenceNodes()") &&
+      templates.back.includes("function wrapUngroupedContextNodes(sentence)") &&
       templates.back.includes(
         'querySelectorAll("#manatan-note-type.mk-back")',
       ) &&

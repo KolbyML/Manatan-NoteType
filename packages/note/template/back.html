@@ -110,6 +110,10 @@
         {{/SentenceFurigana}}
       </section>
 
+      {{#SentenceTranslation}}
+      <section class="mk-sentence-translation">{{SentenceTranslation}}</section>
+      {{/SentenceTranslation}}
+
       <section class="mk-definition">
         {{#DefinitionPicture}}
         <div class="mk-definition-picture mk-zoomable-images">
@@ -643,10 +647,7 @@
   }
 
   function initFieldGroups() {
-    function wrapUngroupedSentenceNodes() {
-      const sentence = $(".mk-sentence");
-      if (!sentence || !sentence.querySelector("[data-group-id]")) return;
-
+    function wrapUngroupedContextNodes(sentence) {
       let wrapper = null;
       function ensureWrapper(referenceNode) {
         if (!wrapper) {
@@ -677,19 +678,26 @@
           flushWrapper();
           return;
         }
-        if (!el.textContent.replace(/\u00a0/g, "").trim()) return;
+        if (
+          el.tagName !== "BR" &&
+          !el.textContent.replace(/\u00a0/g, "").trim()
+        )
+          return;
         ensureWrapper(node).append(node);
       });
     }
 
-    wrapUngroupedSentenceNodes();
+    const contexts = $$(".mk-sentence, .mk-sentence-translation");
+    if (contexts.some((context) => context.querySelector("[data-group-id]"))) {
+      contexts.forEach(wrapUngroupedContextNodes);
+    }
 
     $$(".mk-picture img").forEach((img) => {
       if (!img.closest("[data-group-id]")) img.dataset.groupId = "0";
     });
 
     const groupEls = $$(
-      ".mk-sentence [data-group-id], .mk-picture [data-group-id], .mk-audio-row [data-group-id], .mk-misc [data-group-id]",
+      ".mk-sentence [data-group-id], .mk-sentence-translation [data-group-id], .mk-picture [data-group-id], .mk-audio-row [data-group-id], .mk-misc [data-group-id]",
     );
     const ids = Array.from(
       new Set(groupEls.map((el) => el.dataset.groupId).filter(Boolean)),
