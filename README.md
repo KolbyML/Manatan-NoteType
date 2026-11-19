@@ -20,6 +20,8 @@ The card is just front HTML, back HTML, and CSS. There is no bundled app runtime
 
 Run `pnpm --filter @repo/manatan-note-type build` to write the generated Anki files into `packages/note/.anki-build/`.
 
+Text fields determine their direction independently. Arabic and other right-to-left text can appear alongside English definitions or Japanese ruby without changing the direction of the card controls.
+
 Generated files:
 
 - `_manatan_note_type_front.html`
@@ -66,6 +68,16 @@ Manatan-NoteType keeps Kiku-style field names so existing mining notes can move 
 - Avoid version-sensitive APIs and live Anki integrations.
 - Prefer field-rendered HTML and CSS over a hydrated JavaScript app.
 - Keep the template easy to edit by hand.
+
+## Browser Regression Tests
+
+Run `pnpm --filter @repo/manatan-note-type exec playwright install chromium` once. Start a dedicated disposable Manatan Flashcards backend, then run:
+
+```sh
+MANATAN_SRS_TEST_URL=http://127.0.0.1:4567/api/v1/srs pnpm --filter @repo/manatan-note-type test:browser
+```
+
+Use a separate test backend, since the suite creates and deletes a test collection. It builds the current templates, installs them through the real Flashcards API, creates cards, and tests their rendered pages in a browser. Set `MANATAN_BROWSER=webkit` to test WebKit after installing that browser. Optional `MANATAN_SCREENSHOT_DIR` saves screenshots; `BROWSER_EXECUTABLE_PATH` selects an already-installed browser executable.
 
 ## Credits
 

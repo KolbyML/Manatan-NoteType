@@ -44,7 +44,7 @@ function render(sentence, translation) {
 test("the back template includes an optional secondary subtitle field", () => {
   assert.match(
     source,
-    /{{#SentenceTranslation}}\s*<section class="mk-sentence-translation">\s*{{SentenceTranslation}}\s*<\/section>\s*{{\/SentenceTranslation}}/,
+    /{{#SentenceTranslation}}\s*<section class="mk-sentence-translation"[^>]*>\s*{{SentenceTranslation}}\s*<\/section>\s*{{\/SentenceTranslation}}/,
   );
   const packageScript = readFileSync(
     new URL("../script/generate-preview-apkg.py", import.meta.url),
