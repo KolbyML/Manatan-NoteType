@@ -1,0 +1,34 @@
+[
+  {
+    "key": "akushu",
+    "Expression": "握手",
+    "ExpressionReading": "あくしゅ",
+    "PitchPosition": "<span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">あ</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">く</span><span style=\"border-color:currentColor;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">し</span><span style=\"display:inline;\">ゅ</span><span style=\"border-color:currentColor;\"></span></span></span>",
+    "PitchCategories": "atamadaka",
+    "positions": "<span style=\"display:inline;\"><span>[</span><span>1</span><span>]</span></span>"
+  },
+  {
+    "key": "yadori",
+    "Expression": "宿り",
+    "ExpressionReading": "やどり",
+    "PitchPosition": "<ol><li><span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">や</span><span style=\"border-color:currentColor;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">ど</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;\"></span></span><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">り</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span></span></li><li><span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">や</span><span style=\"border-color:currentColor;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">ど</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;\"></span></span><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">り</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span></span></li><li><span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">や</span><span style=\"border-color:currentColor;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">ど</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;\"></span></span><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">り</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span></span></li></ol>",
+    "PitchCategories": "odaka",
+    "positions": "<ol><li><span style=\"display:inline;\"><span>[</span><span>3</span><span>]</span></span></li><li><span style=\"display:inline;\"><span>[</span><span>3</span><span>]</span></span></li><li><span style=\"display:inline;\"><span>[</span><span>3</span><span>]</span></span></li></ol>"
+  },
+  {
+    "key": "heya",
+    "Expression": "部屋",
+    "ExpressionReading": "へや",
+    "PitchPosition": "<span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">へ</span><span style=\"border-color:currentColor;\"></span></span><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">や</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span></span>",
+    "PitchCategories": "odaka",
+    "positions": "<span style=\"display:inline;\"><span>[</span><span>2</span><span>]</span></span>"
+  },
+  {
+    "key": "annotated",
+    "Expression": "かく",
+    "ExpressionReading": "かく",
+    "PitchPosition": "<span style=\"display:inline;\"><span style=\"display:inline-block;position:relative;padding-right:0.1em;margin-right:0.1em;\"><span style=\"display:inline;\">か</span><span style=\"border-color:currentColor;display:block;user-select:none;pointer-events:none;position:absolute;top:0.1em;left:0;right:0;height:0;border-top-width:0.1em;border-top-style:solid;right:-0.1em;height:0.4em;border-right-width:0.1em;border-right-style:solid;\"></span></span><span style=\"display:inline-block;position:relative;\"><span style=\"display:inline;\">く</span><span style=\"display:block;position:absolute;left:50%;top:50%;width:1.125em;height:1.125em;border-radius:50%;box-sizing:border-box;z-index:1;transform:translate(-50%, -50%);border:1.5px dotted #c83c28;\"></span><span style=\"border-color:currentColor;\"></span></span></span>",
+    "PitchCategories": "atamadaka",
+    "positions": "<span style=\"display:inline;\"><span>[</span><span>1</span><span>]</span></span>"
+  }
+]

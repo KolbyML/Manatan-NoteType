@@ -56,12 +56,14 @@
         </div>
 
         {{#PitchPosition}}
-        <div
-          class="mk-pitch"
-          data-pitch-categories="{{PitchCategories}}"
-          data-reading="{{ExpressionReading}}"
-        >
-          {{PitchPosition}}
+        <div class="mk-pitch">
+          <template class="mk-pitch-categories-source">
+            {{PitchCategories}}
+          </template>
+          <template class="mk-pitch-reading-source">
+            {{ExpressionReading}}
+          </template>
+          <div class="mk-pitch-source">{{PitchPosition}}</div>
         </div>
         {{/PitchPosition}}
 
@@ -565,8 +567,15 @@
     );
   }
 
+  function pitchFieldText(pitch, selector) {
+    const field = pitch.querySelector(selector);
+    return (field?.content || field)?.textContent.trim() || "";
+  }
+
   function getPitchReading(pitch) {
-    const reading = pitch.dataset.reading?.trim();
+    const reading =
+      pitchFieldText(pitch, ".mk-pitch-reading-source") ||
+      pitch.dataset.reading?.trim();
     if (reading) return reading;
 
     const expression = $(".mk-back-expression")?.cloneNode(true);
@@ -588,6 +597,58 @@
       : "";
   }
 
+  // Recognize the self-contained HTML produced by the app's Pitch Accent
+  // exporter. Read the actual mora lines, never numbers from CSS attributes.
+  // Keep the original markup so nasal/devoicing annotations remain intact.
+  function exportedPitchGraphs(source, units) {
+    const graphs = [];
+    source.querySelectorAll("span").forEach((node) => {
+      const parts = Array.from(node.children);
+      if (
+        !parts.length ||
+        !parts.every(
+          (part) =>
+            part.tagName === "SPAN" &&
+            part.style.display === "inline-block" &&
+            part.style.position === "relative",
+        )
+      )
+        return;
+      if (
+        parts.length !== units.length ||
+        parts.some(
+          (part, index) =>
+            part.textContent.normalize() !== units[index].normalize(),
+        )
+      )
+        return;
+      const lines = parts.map((part) =>
+        Array.from(part.querySelectorAll("span")).find(
+          (line) =>
+            line.style.borderColor?.toLowerCase() === "currentcolor" &&
+            !line.textContent,
+        ),
+      );
+      if (lines.some((line) => !line)) return;
+      const drop =
+        lines.findIndex(
+          (line) =>
+            line.style.borderRightStyle === "solid" &&
+            parseFloat(line.style.borderRightWidth) > 0,
+        ) + 1;
+      const expected = pitchPattern(units.length, drop);
+      if (
+        lines.some(
+          (line, index) =>
+            (line.style.borderTopStyle === "solid" ? 1 : 0) !== expected[index],
+        )
+      )
+        return;
+      graphs.push({ node, position: drop });
+    });
+    return graphs;
+  }
+
   function initPitchDisplay() {
     const pitch = $(".mk-pitch");
     if (!pitch || pitch.dataset.mkPitchReady) return;
@@ -595,19 +656,56 @@
     const units = morae(getPitchReading(pitch));
     if (!units.length) return;
 
-    const pitchNumbers = extractPitchNumbers(pitch.textContent).filter(
+    const source = pitch.querySelector(".mk-pitch-source") || pitch;
+    const pitchNumbers = extractPitchNumbers(source.textContent).filter(
       (position) => position <= units.length,
     );
-    if (!pitchNumbers.length) return;
-
-    const categories = (pitch.dataset.pitchCategories || "")
-      .split(",")
-      .map((category) => category.trim().toLowerCase())
-      .filter(Boolean);
+    const categoryText =
+      pitchFieldText(pitch, ".mk-pitch-categories-source") ||
+      pitch.dataset.pitchCategories ||
+      "";
+    const categories = (
+      categoryText
+        .toLowerCase()
+        .match(/heiban|atamadaka|nakadaka|odaka|kifuku|起伏/g) || []
+    ).map((category) => (category === "起伏" ? "kifuku" : category));
     // PitchCategories is a set of labels for the entry. Only Kifuku
     // carries information beyond each graph's numeric downstep.
     const hasKifuku =
       categories.includes("kifuku") || categories.includes("起伏");
+
+    const graphs = exportedPitchGraphs(source, units);
+    if (graphs.length || source.querySelector("svg") || !pitchNumbers.length) {
+      const first = graphs[0];
+      const primary = first
+        ? pitchType(units.length, first.position, hasKifuku)
+        : pitchNumbers.length
+          ? pitchType(units.length, pitchNumbers[0], hasKifuku)
+          : categories[0];
+      if (primary) {
+        root.dataset.pitchType = primary;
+        pitch.dataset.pitchType = primary;
+      }
+      const seen = new Set();
+      graphs.forEach(({ node, position }) => {
+        const signature = node.outerHTML;
+        const parent = node.parentElement;
+        if (
+          seen.has(signature) &&
+          parent?.tagName === "LI" &&
+          !parent.attributes.length &&
+          parent.children.length === 1 &&
+          parent.textContent.trim() === node.textContent.trim()
+        ) {
+          parent.remove();
+          return;
+        }
+        seen.add(signature);
+        node.dataset.pitchType = pitchType(units.length, position, hasKifuku);
+      });
+      pitch.dataset.mkPitchReady = "true";
+      return;
+    }
 
     pitch.textContent = "";
     pitch.dataset.mkPitchReady = "true";

@@ -441,6 +441,21 @@ rt {
   --mk-pitch-content-color: oklch(27% 0.105 300);
 }
 
+/* HTML pitch exports keep their own lines and phonetic annotations. */
+.mk-pitch-source > ol {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mk-pitch-source [data-pitch-type] {
+  color: var(--mk-pitch-color);
+}
+
 .mk-pitch-item {
   display: flex;
   align-items: flex-start;

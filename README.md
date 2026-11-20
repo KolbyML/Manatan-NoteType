@@ -32,6 +32,11 @@ Run `python3 -m pip install -r packages/note/script/requirements-apkg.txt` once,
 
 The sample deck uses the Kiku v1.10.2 sample screenshots and audio stored in `packages/note/preview/kiku-v1.10.2-media/`.
 
+The note type has one card template, **Mining**, and creates one card per note.
+The `Is...Card` fields select its presentation; they do not create additional
+card templates. Package generation verifies the model identity, template name,
+and one-card-per-note contract before the package can be released.
+
 ## Supported Fields
 
 Manatan-NoteType keeps Kiku-style field names so existing mining notes can move over without reshaping every card.
@@ -54,7 +59,7 @@ Manatan-NoteType keeps Kiku-style field names so existing mining notes can move 
 - `IsClickCard`: lets the front switch from expression to sentence by tapping/clicking.
 - `IsSentenceCard`: shows the sentence on the front.
 - `IsAudioCard`: shows the sentence and plays audio on the front. If the audio field contains grouped clips, the front shows all their sentence contexts in a list for Anki's playback queue.
-- `PitchPosition`: numeric pitch accent position, used to draw the static pitch graph.
+- `PitchPosition`: numeric pitch accent positions or exported graphical pitch accents.
 - `PitchCategories`: kept for compatibility.
 - `Frequency`: frequency details.
 - `FreqSort`: compact frequency rank shown in the card header.
@@ -78,6 +83,19 @@ MANATAN_SRS_TEST_URL=http://127.0.0.1:4567/api/v1/srs pnpm --filter @repo/manata
 ```
 
 Use a separate test backend, since the suite creates and deletes a test collection. It builds the current templates, installs them through the real Flashcards API, creates cards, and tests their rendered pages in a browser. Set `MANATAN_BROWSER=webkit` to test WebKit after installing that browser. Optional `MANATAN_SCREENSHOT_DIR` saves screenshots; `BROWSER_EXECUTABLE_PATH` selects an already-installed browser executable.
+
+## Pitch field compatibility
+
+Pitch fields support both **Pitch Accent Positions** and graphical **Pitch Accent**
+exports. HTML in the reading or category field is read as field content and cannot
+break surrounding card attributes. Existing HTML graphs keep their phonetic
+annotations. Run the browser pitch regressions against a dedicated Flashcards
+backend with the matching bundled templates:
+
+```sh
+MANATAN_SRS_TEST_URL=http://127.0.0.1:4567/api/v1/srs node --test packages/note/test/browser/pitch.test.js
+# Repeat with MANATAN_PREVIEW=draft to exercise the editor Preview route.
+```
 
 ## Credits
 

@@ -171,7 +171,10 @@ async function run() {
   await assert(
     !templates.back.includes('class="mk-reading"') &&
       templates.back.includes("<rt>{{ExpressionReading}}</rt>") &&
-      templates.back.includes('data-reading="{{ExpressionReading}}"') &&
+      templates.back.includes('class="mk-pitch-reading-source"') &&
+      templates.back.includes('class="mk-pitch-categories-source"') &&
+      !templates.back.includes('data-reading="{{ExpressionReading}}"') &&
+      !templates.back.includes('data-pitch-categories="{{PitchCategories}}"') &&
       templates.back.includes('class="mk-external-links"') &&
       templates.back.includes('class="mk-misc"') &&
       templates.back.includes("function initTags()") &&

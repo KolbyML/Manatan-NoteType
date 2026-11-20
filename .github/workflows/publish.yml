@@ -91,6 +91,9 @@ jobs:
       - name: Smoke Test Static Templates
         run: pnpm smoke
 
+      - name: Test Static Templates
+        run: pnpm test
+
       - name: Build Release APKG
         shell: bash
         run: |
@@ -108,10 +111,10 @@ jobs:
           {
             echo "## Manatan-NoteType $TAG"
             echo ""
-            echo "Static Anki template release."
+            echo "Manatan Flashcards note template release."
             echo ""
             echo "### Assets"
-            echo "- Manatan-NoteType-${TAG}.apkg, including the local Kiku v1.10.2 sample screenshots and audio"
+            echo "- Manatan-NoteType-${TAG}.apkg, including sample cards, media, and fonts"
             echo ""
             if [ -n "$PREV_TAG" ]; then
               echo "### Changes Since $PREV_TAG"

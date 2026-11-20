@@ -4,6 +4,8 @@ import json
 import zipfile
 from pathlib import Path
 
+from package_contract import verify_package
+
 try:
     import genanki
 except ImportError as err:
@@ -183,7 +185,8 @@ def write_apkg():
             "revision": revision,
             "indexUrl": "https://api.github.com/repos/KolbyML/Manatan-NoteType/releases/latest",
         }))
-    print(f"✅ Generated {OUT.relative_to(ROOT)}")
+    verify_package(OUT)
+    print(f"✅ Generated and verified {OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
